@@ -27,15 +27,15 @@ const (
 	stackTrace   = "StackTrace"
 )
 
-// errorVerbosity - private global error verbosity level variable
-var errorVerbosity VerbosityLevel = ErrorMessage
+// globalErrorVerbosity - private global error verbosity level variable
+var globalErrorVerbosity VerbosityLevel = ErrorMessage
 
 // SetErrorVerbosity - sets the global error verbosity level for the application
 // This determines the amount of detail or information that will be included in error messages
 //
 // Parameters:
 //  - level: The desired verbosity level to set for error reporting.
-func SetErrorVerbosity(level VerbosityLevel) { errorVerbosity = level }
+func SetErrorVerbosity(level VerbosityLevel) { globalErrorVerbosity = level }
 
 // CustomError - represents a customized error type for the application
 // It provides additional context such as severity and stack trace
@@ -96,13 +96,13 @@ func (e *CustomError) AppendStackTrace(actor string) {
 // Returns:
 //   string: A formatted string representation of the error based on the error verbosity level
 func (e *CustomError) Error() string {
-	switch errorVerbosity {
+	switch globalErrorVerbosity {
 	case ErrorMessage:
 		return fmt.Sprintf("[%s] : %s\n", errorMessage, e.message)
 	case StackTrace:
 		return fmt.Sprintf("[%s] : %s\n", stackTrace, e.stackTrace)
 	case Full:
-		return fmt.Sprintf("[%s] : %s\n[%s] : %s\n", errorMessage, e.message, stackTrace, e.stackTrace)
+		return fmt.Sprintf("[%s] : %s | [%s] : %s\n", errorMessage, e.message, stackTrace, e.stackTrace)
 	default:
 		panic("Invalid error verbosity level")
 	}
