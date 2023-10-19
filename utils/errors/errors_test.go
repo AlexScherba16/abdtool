@@ -67,7 +67,7 @@ func TestNewCustomError_ErrorMessageVerbosity(t *testing.T) {
 			}
 
 			// Assert expected error message
-			if err.Error() == testCase.expectedMessage {
+			if err.Error() != testCase.expectedMessage {
 				t.Fatalf("[%s] : expected message -> %v, got -> %v", t.Name(), testCase.expectedMessage, err.Error())
 			}
 		})
