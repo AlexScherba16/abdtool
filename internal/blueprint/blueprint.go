@@ -10,16 +10,11 @@ import (
 
 // Blueprint - encapsulates the configuration blueprint of an application
 type Blueprint struct {
-	// project - represents the essential information about the project
-	project types.ProjectEntry
-}
+	// Project - represents the essential information about the project
+	Project types.ProjectEntry
 
-// Project - getter function that returns ProjectEntry entity
-//
-// Returns:
-//   - types.ProjectEntry: General project info
-func (b Blueprint) Project() types.ProjectEntry {
-	return b.project
+	// Routines - represents slice of configurations for routine runners
+	Routines []types.RoutineEntry
 }
 
 // NewBlueprint - constructs and returns an instance of application blueprint,
@@ -54,13 +49,22 @@ func NewBlueprint(path string) (Blueprint, *errors.CustomError) {
 		return Blueprint{}, err
 	}
 
+	// Retreive project details
 	project, err := types.NewProjectEntry(data)
 	if err != nil {
 		err.AppendStackTrace(source)
 		return Blueprint{}, err
 	}
 
+	// Retreive routines details
+	routines, err := types.NewRoutinesEntry(data)
+	if err != nil {
+		err.AppendStackTrace(source)
+		return Blueprint{}, err
+	}
+
 	return Blueprint{
-		project: project,
+		Project:  project,
+		Routines: routines,
 	}, nil
 }
