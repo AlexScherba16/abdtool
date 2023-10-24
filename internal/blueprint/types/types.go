@@ -1,71 +1,22 @@
 package types
 
-import (
-	"abdtool/utils/errors"
-	"fmt"
+// Blueprint - encapsulates the configuration blueprint of an application
+type Blueprint struct {
+	// Project - represents the essential information about the project
+	Project ProjectEntry
 
-	"gopkg.in/yaml.v3"
-)
+	// Routines - represents slice of configurations for routine runners
+	Routines []RoutineEntry
+}
 
 // ProjectEntry - represents essential details about project. It captures
 // the project's name and its version
 type ProjectEntry struct {
 	// Name - contains specified title of the project
-	Name string `yaml:"name"`
+	Name string
 
 	// Version - denotes the version string of the project
-	Version string `yaml:"version"`
-}
-
-// NewProjectEntry - constructs and returns an ProjectEntry instance,
-// with project name and it's version
-//
-// Returns:
-//   - ProjectEntry: The constructed ProjectEntry instance or empty struct if there's an error
-//   - *errors.CustomError: A custom error that provides detailed information if something went wrong during the construction, nil if there's no error
-func NewProjectEntry(data []byte) (ProjectEntry, *errors.CustomError) {
-	source := "NewProjectEntry"
-
-	// Using anonymous struct for yaml parser
-	tmp := struct {
-		Project ProjectEntry `yaml:"project"`
-	}{}
-
-	// Read project entry data
-	err := yaml.Unmarshal(data, &tmp)
-	if err != nil {
-		message := fmt.Sprintf("Failed to unmarshall yaml file, %s", err.Error())
-		err := errors.NewCustomError(errors.Critical, message, source)
-		return ProjectEntry{}, err
-	}
-
-	// Validate provided fields
-	if tmp.Project.Name == "" {
-		message := fmt.Sprintf("%q must be provided", "project.name")
-		err := errors.NewCustomError(errors.Critical, message, source)
-		return ProjectEntry{}, err
-	}
-
-	if tmp.Project.Version == "" {
-		message := fmt.Sprintf("%q must be provided", "project.version")
-		err := errors.NewCustomError(errors.Critical, message, source)
-		return ProjectEntry{}, err
-	}
-	return tmp.Project, nil
-}
-
-type StepEntry struct {
-	// Name - contains specified name of step
-	Name string `yaml:"name"`
-
-	// Description - contains more detailed info about step
-	Description string `yaml:"description"`
-
-	// Attempts - specifies the number of retry attempts to execute the step in case of failure
-	Attempts int `yaml:"attempts"`
-
-	// Timeout_s - time limit to execute step
-	Timeout_s int `yaml:"timeout_s"`
+	Version string
 }
 
 // RoutineEntry - represents essential details about routine runner. It captures
@@ -83,96 +34,39 @@ type RoutineEntry struct {
 	Context map[string]interface{}
 }
 
-// NewRoutinesEntry - constructs and returns slice of RoutineEntry instances
-//
-// Returns:
-//   - []RoutineEntry: The constructed RoutineEntry slice or nil if there's an error
-//   - *errors.CustomError: A custom error that provides detailed information if something went wrong during the construction, nil if there's no error
-func NewRoutinesEntry(data []byte) ([]RoutineEntry, *errors.CustomError) {
-	source := "NewRoutinesEntry"
+// PostEventEntry - represents a specific event that should be triggered
+// during the execution of a certain step. It provides details about the event name
+// and the associated data (payload) that might be needed when the event is posted
+type PostEventEntry struct {
+	// Event - is the name or identifier of the event to be triggered
+	Event string
 
-	// Using anonymous struct for yaml parser
-	tmp := struct {
-		Routines []struct {
-			Routine struct {
-				Name  string `yaml:"name"`
-				Steps []struct {
-					Step StepEntry `yaml:"step"`
-				} `yaml:"steps"`
-				Context map[string]interface{} `yaml:"context"`
-			} `yaml:"routine"`
-		} `yaml:"routines"`
-	}{}
+	// Payload contains the list of fields or data associated with the event
+	Payload []string
+}
 
-	// Read project entry data
-	err := yaml.Unmarshal(data, &tmp)
-	if err != nil {
-		message := fmt.Sprintf("Failed to unmarshall yaml file, %s", err.Error())
-		err := errors.NewCustomError(errors.Critical, message, source)
-		return nil, err
-	}
+type StepEntry struct {
+	// Name - contains specified name of step
+	Name string
 
-	// All messy parsing stuff should be here))
-	parseSteps := func(stepsTmp []struct {
-		Step StepEntry `yaml:"step"`
-	}) []StepEntry {
-		var steps []StepEntry
-		for _, s := range stepsTmp {
-			steps = append(steps, s.Step)
-		}
-		return steps
-	}
+	// Description - contains more detailed info about step
+	Description string
 
-	parseRoutine := func(routineTmp struct {
-		Routine struct {
-			Name  string `yaml:"name"`
-			Steps []struct {
-				Step StepEntry `yaml:"step"`
-			} `yaml:"steps"`
-			Context map[string]interface{} `yaml:"context"`
-		} `yaml:"routine"`
-	}) RoutineEntry {
-		return RoutineEntry{
-			Name:    routineTmp.Routine.Name,
-			Steps:   parseSteps(routineTmp.Routine.Steps),
-			Context: routineTmp.Routine.Context,
-		}
-	}
+	// Attempts - specifies the number of retry attempts to execute the step in case of failure
+	Attempts int
 
-	var routines []RoutineEntry
-	for _, r := range tmp.Routines {
-		routine := parseRoutine(r)
+	// Timeout_s - time limit to execute step
+	Timeout_s int
 
-		// Validate routine fields
-		if routine.Name == "" {
-			message := fmt.Sprintf("%q must be provided", "routine.name")
-			return nil, errors.NewCustomError(errors.Critical, message, source)
-		}
-		if len(routine.Steps) == 0 {
-			message := fmt.Sprintf("%q must be provided", "routine.steps")
-			return nil, errors.NewCustomError(errors.Critical, message, source)
-		}
+	// Post - is a slice of PostEventEntry. Each entry represents an event
+	// that should be posted during the execution of a specific step,
+	// this allows the system to be notified or updated based on the results
+	// or progress of the step being executed
+	Post []PostEventEntry
 
-		// Validate step fields
-		for _, step := range routine.Steps {
-			if step.Name == "" {
-				message := fmt.Sprintf("%q must be provided", "step.name")
-				return nil, errors.NewCustomError(errors.Critical, message, source)
-			}
-			if step.Description == "" {
-				message := fmt.Sprintf("%q must be provided", "step.description")
-				return nil, errors.NewCustomError(errors.Critical, message, source)
-			}
-			if step.Timeout_s == 0 {
-				message := fmt.Sprintf("%q must be provided", "step.timeout_s")
-				return nil, errors.NewCustomError(errors.Critical, message, source)
-			}
-			if step.Attempts == 0 {
-				step.Attempts = 1
-			}
-		}
-		routines = append(routines, routine)
-	}
-
-	return routines, nil
+	// Subscribe - is a slice of event names to which Step is subscribed
+	// IMPORTANT: Step will be blocked and wait until one of these events is emitted
+	// if the expected event is not emitted, there's a risk that the Step could hang indefinitely
+	// if all events occurs, the Step will continue its operation
+	Subscribe []string
 }
