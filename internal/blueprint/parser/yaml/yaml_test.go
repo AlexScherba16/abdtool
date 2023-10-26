@@ -1,14 +1,15 @@
-package types
+package yaml
 
 import (
+	"abdtool/internal/blueprint/types"
 	"abdtool/internal/mics"
 	"abdtool/utils/errors"
-	"fmt"
 	"os"
+	"reflect"
 	"testing"
 )
 
-func TestNewProjectEntry(t *testing.T) {
+func Test_parseProjectEntry(t *testing.T) {
 	expectedName := "test"
 	expectedVersion := "2.2.8"
 
@@ -16,31 +17,39 @@ func TestNewProjectEntry(t *testing.T) {
 		name           string
 		yaml           map[string]interface{}
 		expectedError  *errors.CustomError
-		expectedResult ProjectEntry
+		expectedResult types.ProjectEntry
 	}{
 		{
-			name:           "emptyProjectEntry",
+			name:           "noProjectEntry",
 			yaml:           map[string]interface{}{},
-			expectedError:  errors.NewCustomError(errors.Critical, fmt.Sprintf("%q must be provided", "project.name"), "NewProjectEntry"),
-			expectedResult: ProjectEntry{},
+			expectedError:  nil,
+			expectedResult: types.ProjectEntry{},
 		},
 		{
-			name: "emptyProjectName",
-			yaml: map[string]interface{}{
-				"project": map[string]interface{}{},
-			},
-			expectedError:  errors.NewCustomError(errors.Critical, fmt.Sprintf("%q must be provided", "project.name"), "NewProjectEntry"),
-			expectedResult: ProjectEntry{},
+			name:           "emptyProjectEntry",
+			yaml:           map[string]interface{}{"project": map[string]interface{}{}},
+			expectedError:  nil,
+			expectedResult: types.ProjectEntry{},
 		},
 		{
-			name: "emptyProjectVersion",
-			yaml: map[string]interface{}{
-				"project": map[string]interface{}{
-					"name": expectedName,
-				},
+			name:           "emptyProjectName",
+			yaml:           map[string]interface{}{"project": map[string]interface{}{"name": nil}},
+			expectedError:  nil,
+			expectedResult: types.ProjectEntry{},
+		},
+		{
+			name:          "emptyProjectVersion",
+			yaml:          map[string]interface{}{"project": map[string]interface{}{"name": expectedName}},
+			expectedError: nil,
+			expectedResult: types.ProjectEntry{
+				Name: expectedName,
 			},
-			expectedError:  errors.NewCustomError(errors.Critical, fmt.Sprintf("%q must be provided", "project.version"), "NewProjectEntry"),
-			expectedResult: ProjectEntry{},
+		},
+		{
+			name:           "emptyNameValidVersion",
+			yaml:           map[string]interface{}{"project": map[string]interface{}{"version": expectedVersion}},
+			expectedError:  nil,
+			expectedResult: types.ProjectEntry{Version: expectedVersion},
 		},
 		{
 			name: "validProjectEntry",
@@ -50,8 +59,11 @@ func TestNewProjectEntry(t *testing.T) {
 					"version": expectedVersion,
 				},
 			},
-			expectedError:  nil,
-			expectedResult: ProjectEntry{Name: expectedName, Version: expectedVersion},
+			expectedError: nil,
+			expectedResult: types.ProjectEntry{
+				Name:    expectedName,
+				Version: expectedVersion,
+			},
 		},
 	}
 
@@ -71,8 +83,7 @@ func TestNewProjectEntry(t *testing.T) {
 			}
 
 			/* ACT */
-			project, err := NewProjectEntry(data)
-
+			result, err := parseProjectEntry(data)
 			/* ASSERT */
 			// Assert expected error
 			if test.expectedError != nil {
@@ -96,14 +107,10 @@ func TestNewProjectEntry(t *testing.T) {
 				}
 			}
 
-			// Assert required Name field
-			if project.Name != test.expectedResult.Name {
-				t.Fatalf("[%s] : expected name -> %v, got -> %v", t.Name(), test.expectedResult.Name, project.Name)
-			}
-
-			// Assert required Version field
-			if project.Version != test.expectedResult.Version {
-				t.Fatalf("[%s] : expected version -> %v, got -> %v", t.Name(), test.expectedResult.Version, project.Version)
+			// Assert expected result
+			eq := reflect.DeepEqual(result, test.expectedResult)
+			if !eq {
+				t.Fatalf("[%s] : expected project entry -> %v, got -> %v", t.Name(), test.expectedResult, result)
 			}
 		})
 	}
