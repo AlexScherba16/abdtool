@@ -54,6 +54,12 @@ func validateBlueprint(b *types.Blueprint) *errors.CustomError {
 		return errors.NewCustomError(errors.Critical, message, source)
 	}
 
+	// Validate nonempty routines collection
+	if len(b.Routines) == 0 {
+		message := fmt.Sprintf("%q must be provided", "routines")
+		return errors.NewCustomError(errors.Critical, message, source)
+	}
+
 	for _, r := range b.Routines {
 		// Validate Routine entry
 		if r.Name == "" {
@@ -68,19 +74,20 @@ func validateBlueprint(b *types.Blueprint) *errors.CustomError {
 		for _, s := range r.Steps {
 			// Validate Step entry
 			if s.Name == "" {
-				message := fmt.Sprintf("%q must be provided, in %q routine", "step.name", r.Name)
+				message := fmt.Sprintf("%q must be provided in %q routine", "step.name", r.Name)
 				return errors.NewCustomError(errors.Critical, message, source)
 			}
 			if s.Description == "" {
 				message := fmt.Sprintf("%q must be provided for %q step", "step.description", s.Name)
 				return errors.NewCustomError(errors.Critical, message, source)
 			}
-			if s.Timeout_s == 0 {
-				message := fmt.Sprintf("%q must be provided for %q step", "step.timeout_s", s.Name)
+			if s.Timeout_s <= 0 {
+				message := fmt.Sprintf("%q must be >= 0 in %q step", "step.timeout_s", s.Name)
 				return errors.NewCustomError(errors.Critical, message, source)
 			}
-			if s.Attempts == 0 {
-				s.Attempts = 1
+			if s.Attempts <= 0 {
+				message := fmt.Sprintf("%q must be >= 0 in %q step", "step.attempts", s.Name)
+				return errors.NewCustomError(errors.Critical, message, source)
 			}
 		}
 	}

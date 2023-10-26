@@ -1,6 +1,7 @@
 package mics
 
 import (
+	"abdtool/utils/errors"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -29,4 +30,13 @@ func CreateTmpYAML(name string, data interface{}) (string, error) {
 
 func DeleteTmpYAML(path string) error {
 	return os.Remove(path)
+}
+
+func CreateErrorWithStackTrace(severity errors.SeverityLevel, message string, errorSourcePoint string, trace ...string) *errors.CustomError {
+	err := errors.NewCustomError(errors.Critical, message, errorSourcePoint)
+
+	for _, t := range trace {
+		err.AppendStackTrace(t)
+	}
+	return err
 }

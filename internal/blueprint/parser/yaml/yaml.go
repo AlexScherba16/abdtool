@@ -170,13 +170,6 @@ func parseRoutinesEntry(data []byte) ([]types.RoutineEntry, *errors.CustomError)
 func (p *yamlParser) GetBlueprint(path string) (types.Blueprint, *errors.CustomError) {
 	source := "yaml|GetBlueprint"
 
-	// Check for file exists
-	_, e := os.Stat(path)
-	if e != nil {
-		err := errors.NewCustomError(errors.Critical, "Blueprint file doesn't exist", source)
-		return types.Blueprint{}, err
-	}
-
 	// Get file extension
 	ext := filepath.Ext(path)
 	if ext != ".yaml" {
@@ -198,7 +191,7 @@ func (p *yamlParser) GetBlueprint(path string) (types.Blueprint, *errors.CustomE
 		return types.Blueprint{}, err
 	}
 
-	// Retrieve project details
+	// Retrieve routines details
 	routines, err := parseRoutinesEntry(data)
 	if err != nil {
 		err.AppendStackTrace(source)
