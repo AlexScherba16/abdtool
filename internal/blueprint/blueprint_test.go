@@ -4,7 +4,7 @@ import (
 	"abdtool/internal/blueprint/parser"
 	"abdtool/internal/blueprint/parser/yaml"
 	"abdtool/internal/blueprint/types"
-	"abdtool/internal/mics"
+	"abdtool/internal/misc"
 	"abdtool/utils/errors"
 	"fmt"
 	"reflect"
@@ -211,14 +211,14 @@ func Test_NewBlueprint_InvalidPath(t *testing.T) {
 		{
 			name:           "stackTraceVerbosity",
 			verbosity:      errors.StackTrace,
-			expectedError:  mics.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
+			expectedError:  misc.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
 			path:           path,
 			expectedResult: types.Blueprint{},
 		},
 		{
 			name:           "fullVerbosity",
 			verbosity:      errors.Full,
-			expectedError:  mics.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
+			expectedError:  misc.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
 			path:           path,
 			expectedResult: types.Blueprint{},
 		},
@@ -256,7 +256,7 @@ func Test_NewBlueprint_InvalidPath(t *testing.T) {
 }
 
 func Test_NewBlueprint_ParserError(t *testing.T) {
-	path := mics.ValidYamlFile
+	path := misc.ValidYamlFile
 	message := fmt.Sprintf("Failed to read blueprint file, open %s: The filename, directory name, or volume label syntax is incorrect.", path)
 	source := "yaml|GetBlueprint"
 
@@ -277,14 +277,14 @@ func Test_NewBlueprint_ParserError(t *testing.T) {
 		{
 			name:           "stackTraceVerbosity",
 			verbosity:      errors.StackTrace,
-			expectedError:  mics.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
+			expectedError:  misc.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
 			path:           path,
 			expectedResult: types.Blueprint{},
 		},
 		{
 			name:           "fullVerbosity",
 			verbosity:      errors.Full,
-			expectedError:  mics.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
+			expectedError:  misc.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
 			path:           path,
 			expectedResult: types.Blueprint{},
 		},
@@ -342,14 +342,14 @@ func Test_NewBlueprint_BlueprintValidationError(t *testing.T) {
 		{
 			name:           "stackTraceVerbosity",
 			verbosity:      errors.StackTrace,
-			expectedError:  mics.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
+			expectedError:  misc.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
 			yaml:           map[string]interface{}{},
 			expectedResult: types.Blueprint{},
 		},
 		{
 			name:           "fullVerbosity",
 			verbosity:      errors.Full,
-			expectedError:  mics.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
+			expectedError:  misc.CreateErrorWithStackTrace(errors.Critical, message, source, "NewBlueprint"),
 			yaml:           map[string]interface{}{},
 			expectedResult: types.Blueprint{},
 		},
@@ -358,11 +358,11 @@ func Test_NewBlueprint_BlueprintValidationError(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			/* ARRANGE */
 			errors.SetErrorVerbosity(testCase.verbosity)
-			path, e := mics.CreateTmpYAML(mics.ValidYamlFile, testCase.yaml)
+			path, e := misc.CreateTmpYAML(misc.ValidYamlFile, testCase.yaml)
 			if e != nil {
 				t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 			}
-			defer mics.DeleteTmpYAML(path)
+			defer misc.DeleteTmpYAML(path)
 
 			/* ACT */
 			result, err := NewBlueprint(path)
@@ -427,11 +427,11 @@ func Test_NewBlueprint_ValidBlueprintFile(t *testing.T) {
 		},
 	}
 
-	path, e := mics.CreateTmpYAML(mics.ValidYamlFile, yamlContent)
+	path, e := misc.CreateTmpYAML(misc.ValidYamlFile, yamlContent)
 	if e != nil {
 		t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 	}
-	defer mics.DeleteTmpYAML(path)
+	defer misc.DeleteTmpYAML(path)
 
 	/* ACT */
 	result, err := NewBlueprint(path)

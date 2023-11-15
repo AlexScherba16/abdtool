@@ -2,7 +2,7 @@ package yaml
 
 import (
 	"abdtool/internal/blueprint/types"
-	"abdtool/internal/mics"
+	"abdtool/internal/misc"
 	"abdtool/utils/errors"
 	"fmt"
 	"os"
@@ -73,11 +73,11 @@ func Test_parseProjectEntry(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			/* ARRANGE */
 			// Mock blueprint file
-			path, e := mics.CreateTmpYAML(mics.ValidYamlFile, test.yaml)
+			path, e := misc.CreateTmpYAML(misc.ValidYamlFile, test.yaml)
 			if e != nil {
 				t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 			}
-			defer mics.DeleteTmpYAML(path)
+			defer misc.DeleteTmpYAML(path)
 
 			data, e := os.ReadFile(path)
 			if e != nil {
@@ -489,11 +489,11 @@ func Test_parseRoutinesEntry(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			/* ARRANGE */
 			// Mock blueprint file
-			path, e := mics.CreateTmpYAML(mics.ValidYamlFile, test.yaml)
+			path, e := misc.CreateTmpYAML(misc.ValidYamlFile, test.yaml)
 			if e != nil {
 				t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 			}
-			defer mics.DeleteTmpYAML(path)
+			defer misc.DeleteTmpYAML(path)
 
 			data, e := os.ReadFile(path)
 			if e != nil {
@@ -542,7 +542,7 @@ func Test_parseRoutinesEntry(t *testing.T) {
 }
 
 func Test_GetBlueprint_InvalidFilePath(t *testing.T) {
-	yamlError := fmt.Sprintf("open %s: The filename, directory name, or volume label syntax is incorrect.", mics.ValidYamlFile)
+	yamlError := fmt.Sprintf("open %s: The filename, directory name, or volume label syntax is incorrect.", misc.ValidYamlFile)
 	errorPrefix := "[Error] : Failed to read blueprint file"
 	expectedMessage := fmt.Sprintf("%s, %s", errorPrefix, yamlError)
 	expectedTrace := "[StackTrace] : yaml|GetBlueprint"
@@ -578,7 +578,7 @@ func Test_GetBlueprint_InvalidFilePath(t *testing.T) {
 			parser := NewParser()
 
 			/* ACT */
-			_, err := parser.GetBlueprint(mics.ValidYamlFile)
+			_, err := parser.GetBlueprint(misc.ValidYamlFile)
 
 			/* ASSERT */
 			// Assert expected error
@@ -601,7 +601,7 @@ func Test_GetBlueprint_InvalidFilePath(t *testing.T) {
 
 func Test_GetBlueprint_InvalidFileExtention(t *testing.T) {
 	// Invalid blueprint file extention, expected .yaml, got .qwe
-	expectedMessage := fmt.Sprintf("[Error] : Invalid blueprint file extention, expected .yaml, got %s", mics.InvalidYamlExtention)
+	expectedMessage := fmt.Sprintf("[Error] : Invalid blueprint file extention, expected .yaml, got %s", misc.InvalidYamlExtention)
 	expectedTrace := "[StackTrace] : yaml|GetBlueprint"
 
 	tests := []struct {
@@ -632,14 +632,14 @@ func Test_GetBlueprint_InvalidFileExtention(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			/* ARRANGE */
 			errors.SetErrorVerbosity(testCase.verbosity)
-			fileName := fmt.Sprintf("%s%s", mics.FileName, mics.InvalidYamlExtention)
+			fileName := fmt.Sprintf("%s%s", misc.FileName, misc.InvalidYamlExtention)
 
 			// Mock blueprint file
-			path, e := mics.CreateTmpYAML(fileName, map[string]interface{}{})
+			path, e := misc.CreateTmpYAML(fileName, map[string]interface{}{})
 			if e != nil {
 				t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 			}
-			defer mics.DeleteTmpYAML(path)
+			defer misc.DeleteTmpYAML(path)
 
 			parser := NewParser()
 
@@ -712,11 +712,11 @@ func Test_GetBlueprint_InvalidProjectEntry(t *testing.T) {
 			errors.SetErrorVerbosity(testCase.verbosity)
 
 			// Mock blueprint file
-			path, e := mics.CreateTmpYAML(mics.ValidYamlFile, testCase.yaml)
+			path, e := misc.CreateTmpYAML(misc.ValidYamlFile, testCase.yaml)
 			if e != nil {
 				t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 			}
-			defer mics.DeleteTmpYAML(path)
+			defer misc.DeleteTmpYAML(path)
 			parser := NewParser()
 
 			/* ACT */
@@ -793,11 +793,11 @@ func Test_GetBlueprint_InvalidRoutinesEntry(t *testing.T) {
 			errors.SetErrorVerbosity(testCase.verbosity)
 
 			// Mock blueprint file
-			path, e := mics.CreateTmpYAML(mics.ValidYamlFile, testCase.yaml)
+			path, e := misc.CreateTmpYAML(misc.ValidYamlFile, testCase.yaml)
 			if e != nil {
 				t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 			}
-			defer mics.DeleteTmpYAML(path)
+			defer misc.DeleteTmpYAML(path)
 			parser := NewParser()
 
 			/* ACT */
@@ -891,11 +891,11 @@ func Test_GetBlueprint_ValidBlueprintFile(t *testing.T) {
 	}
 
 	// Mock blueprint file
-	path, e := mics.CreateTmpYAML(mics.ValidYamlFile, yamlContent)
+	path, e := misc.CreateTmpYAML(misc.ValidYamlFile, yamlContent)
 	if e != nil {
 		t.Fatalf("[%s] : can't create YAML file, %s", t.Name(), e.Error())
 	}
-	defer mics.DeleteTmpYAML(path)
+	defer misc.DeleteTmpYAML(path)
 	parser := NewParser()
 
 	/* ACT */

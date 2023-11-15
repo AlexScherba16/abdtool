@@ -1,4 +1,4 @@
-package mics
+package misc
 
 import (
 	"abdtool/utils/errors"
